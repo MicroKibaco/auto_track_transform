@@ -1,0 +1,29 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+dependencies {
+    implementation gradleApi() //gradle sdk
+    implementation localGroovy() //groovy sdk
+
+    implementation 'com.android.tools.build:gradle:4.0.2'
+}
+repositories {
+    jcenter()
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        //本地仓库路径，以放到项目根目录下的 repo 的文件夹为例
+        repository(url: uri('../repo'))
+
+        //groupId ，自行定义
+        pom.groupId = 'com.github.microkibaco'
+
+        //artifactId
+        pom.artifactId = 'autotrack.transform'
+
+        //插件版本号
+        pom.version = '1.0.0'
+    }
+}
+
+
