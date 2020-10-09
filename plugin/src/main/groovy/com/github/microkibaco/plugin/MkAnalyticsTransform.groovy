@@ -8,11 +8,11 @@ import com.android.build.api.transform.*
  * @Tel: 18390833563
  * @function description:
  */
-class SensorsAnalyticsTransform extends Transform {
+class MkAnalyticsTransform extends Transform {
     private static Project project
-    private SensorsAnalyticsExtension sensorsAnalyticsExtension
+    private MkAnalyticsExtension sensorsAnalyticsExtension
 
-    SensorsAnalyticsTransform(Project project, SensorsAnalyticsExtension sensorsAnalyticsExtension) {
+    MkAnalyticsTransform(Project project, MkAnalyticsExtension sensorsAnalyticsExtension) {
         this.project = project
         this.sensorsAnalyticsExtension = sensorsAnalyticsExtension
     }
@@ -76,10 +76,10 @@ class SensorsAnalyticsTransform extends Transform {
                     /**遍历以某一扩展名结尾的文件*/
                     dir.traverse(type: FileType.FILES, nameFilter: ~/.*\.class/) {
                         File classFile ->
-                            if (SensorsAnalyticsClassModifier.isShouldModify(classFile.name)) {
+                            if (MkAnalyticsClassModifier.isShouldModify(classFile.name)) {
                                 File modified = null
                                 if (!sensorsAnalyticsExtension.disableAppClick) {
-                                    modified = SensorsAnalyticsClassModifier.modifyClassFile(dir, classFile, context.getTemporaryDir())
+                                    modified = MkAnalyticsClassModifier.modifyClassFile(dir, classFile, context.getTemporaryDir())
                                 }
                                 if (modified != null) {
                                     /**key 为包名 + 类名，如：/cn/sensorsdata/autotrack/android/app/MainActivity.class*/
@@ -118,7 +118,7 @@ class SensorsAnalyticsTransform extends Transform {
                 File dest = outputProvider.getContentLocation(destName + "_" + hexName, jarInput.contentTypes, jarInput.scopes, Format.JAR)
                 def modifiedJar = null;
                 if (!sensorsAnalyticsExtension.disableAppClick) {
-                    modifiedJar = SensorsAnalyticsClassModifier.modifyJar(jarInput.file, context.getTemporaryDir(), true)
+                    modifiedJar = MkAnalyticsClassModifier.modifyJar(jarInput.file, context.getTemporaryDir(), true)
                 }
                 if (modifiedJar == null) {
                     modifiedJar = jarInput.file

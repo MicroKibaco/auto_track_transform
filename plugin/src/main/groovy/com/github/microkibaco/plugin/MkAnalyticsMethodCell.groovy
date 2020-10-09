@@ -1,6 +1,6 @@
 package com.github.microkibaco.plugin
 
-class SensorsAnalyticsMethodCell {
+class MkAnalyticsMethodCell {
     /**
      * 原方法名
      */
@@ -34,13 +34,13 @@ class SensorsAnalyticsMethodCell {
      */
     List<Integer> opcodes
 
-    SensorsAnalyticsMethodCell(String name, String desc, String agentName) {
+    MkAnalyticsMethodCell(String name, String desc, String agentName) {
         this.name = name
         this.desc = desc
         this.agentName = agentName
     }
 
-    SensorsAnalyticsMethodCell(String name, String desc, String parent, String agentName, String agentDesc, int paramsStart, int paramsCount, List<Integer> opcodes) {
+    MkAnalyticsMethodCell(String name, String desc, String parent, String agentName, String agentDesc, int paramsStart, int paramsCount, List<Integer> opcodes) {
         this.name = name
         this.desc = desc
         this.parent = parent

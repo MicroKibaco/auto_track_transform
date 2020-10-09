@@ -6,9 +6,9 @@ import groovyjarjarasm.asm.Label
 import groovyjarjarasm.asm.MethodVisitor
 import groovyjarjarasm.asm.commons.AdviceAdapter
 
-class SensorsAnalyticsDefaultMethodVisitor extends AdviceAdapter {
+class MkAnalyticsDefaultMethodVisitor extends AdviceAdapter {
 
-    SensorsAnalyticsDefaultMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
+    MkAnalyticsDefaultMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
         super(Opcodes.ASM6, mv, access, name, desc)
     }
 
@@ -118,6 +118,10 @@ class SensorsAnalyticsDefaultMethodVisitor extends AdviceAdapter {
         super.onMethodEnter()
     }
 
+    /**
+     * 使用 onMethodExit 这样就不会影响到应用程序原有点击事件的响应速度
+     * @param opcode
+     */
     @Override
     protected void onMethodExit(int opcode) {
         super.onMethodExit(opcode)

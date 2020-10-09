@@ -7,6 +7,6 @@ package com.github.microkibaco.plugin;
  * @function description:
  */
 
-class SensorsAnalyticsExtension {
+class MkAnalyticsExtension {
     boolean disableAppClick = false
 }

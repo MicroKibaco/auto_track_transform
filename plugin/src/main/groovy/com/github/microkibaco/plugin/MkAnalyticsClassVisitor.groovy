@@ -1,17 +1,23 @@
 package com.github.microkibaco.plugin
 
-import org.objectweb.asm.*
 
-class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
-    private final
-    static String SDK_API_CLASS = "com/sensorsdata/analytics/android/sdk/SensorsDataAutoTrackHelper"
+import groovyjarjarasm.asm.Handle
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
+import org.objectweb.asm.Type
+
+
+class MkAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
+    private final static String SDK_API_CLASS = "com/github/microkibaco/asm_sdk/SensorsDataAutoTrackHelper"
+
     private String[] mInterfaces
     private ClassVisitor classVisitor
 
-    private HashMap<String, SensorsAnalyticsMethodCell> mLambdaMethodCells = new HashMap<>()
+    private HashMap<String, MkAnalyticsMethodCell> mLambdaMethodCells = new HashMap<>()
 
-    SensorsAnalyticsClassVisitor(final ClassVisitor classVisitor) {
-        super(ASM6, classVisitor)
+    MkAnalyticsClassVisitor(final ClassVisitor classVisitor) {
+        super(Opcodes.ASM6, classVisitor)
         this.classVisitor = classVisitor
     }
 
@@ -23,21 +29,42 @@ class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
         methodVisitor.visitMethodInsn(opcode, owner, methodName, methodDesc, false)
     }
 
+    /**
+     *  visit 可以拿到关于 .class 的所有信息,比如: 当前类所实现的接口列表
+     * @param version JDK的版本
+     * @param access 类的修饰符
+     * @param name 类的名称
+     * @param signature 当前类所继承的父类
+     * @param superName
+     * @param interfaces 类所实现的接口列表,在java中,一个类是可以实现多个不同的接口,因此该参数是一个数组类型
+     */
     @Override
     void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces)
         mInterfaces = interfaces
     }
 
+    /**
+     * 可以拿到关于 method所有的信息,比如: 方法名 方法的参数描述
+     * @param access 类的修饰符
+     * @param name 类的名称
+     * @param desc 方法签名
+     * @param signature 类签名
+     * @param exceptions 异常信息
+     * @return MethodVisitor
+     */
     @Override
     MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions)
 
         String nameDesc = name + desc
 
-        methodVisitor = new SensorsAnalyticsDefaultMethodVisitor(methodVisitor, access, name, desc) {
+        methodVisitor = new MkAnalyticsDefaultMethodVisitor(methodVisitor, access, name, desc) {
             boolean isSensorsDataTrackViewOnClickAnnotation = false
 
+            /**
+             * 退出方法前可以退出字节码
+             */
             @Override
             void visitEnd() {
                 super.visitEnd()
@@ -53,7 +80,7 @@ class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
 
                 try {
                     String desc2 = (String) bsmArgs[0]
-                    SensorsAnalyticsMethodCell sensorsAnalyticsMethodCell = SensorsAnalyticsHookConfig.LAMBDA_METHODS.get(Type.getReturnType(desc1).getDescriptor() + name1 + desc2)
+                    MkAnalyticsMethodCell sensorsAnalyticsMethodCell = MkAnalyticsHookConfig.LAMBDA_METHODS.get(Type.getReturnType(desc1).getDescriptor() + name1 + desc2)
                     if (sensorsAnalyticsMethodCell != null) {
                         Handle it = (Handle) bsmArgs[1]
                         mLambdaMethodCells.put(it.name + it.desc, sensorsAnalyticsMethodCell)
@@ -63,6 +90,9 @@ class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
                 }
             }
 
+            /**
+             * 进入方法时插入字节码
+             */
             @Override
             protected void onMethodEnter() {
                 super.onMethodEnter()
@@ -70,7 +100,7 @@ class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
                 /**
                  * 在 android.gradle 的 3.2.1 版本中，针对 view 的 setOnClickListener 方法 的 lambda 表达式做特殊处理。
                  */
-                SensorsAnalyticsMethodCell lambdaMethodCell = mLambdaMethodCells.get(nameDesc)
+                MkAnalyticsMethodCell lambdaMethodCell = mLambdaMethodCells.get(nameDesc)
                 if (lambdaMethodCell != null) {
                     Type[] types = Type.getArgumentTypes(lambdaMethodCell.desc)
                     int length = types.length
@@ -85,9 +115,9 @@ class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
                             }
                         }
                     }
-                    boolean isStaticMethod = SensorsAnalyticsUtils.isStatic(access)
+                    boolean isStaticMethod = MkAnalyticsUtils.isStatic(access)
                     if (!isStaticMethod) {
-                        if (lambdaMethodCell.desc == '(Landroid/view/MenuItem;)Z') {
+                        if (lambdaMethodCell.desc == '(Landroid/view/ MenuItem;)Z') {
                             methodVisitor.visitVarInsn(ALOAD, 0)
                             methodVisitor.visitVarInsn(ALOAD, getVisitPosition(lambdaTypes, paramStart, isStaticMethod))
                             methodVisitor.visitMethodInsn(INVOKESTATIC, SDK_API_CLASS, lambdaMethodCell.agentName, '(Ljava/lang/Object;Landroid/view/MenuItem;)V', false)
@@ -169,7 +199,12 @@ class SensorsAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
             }
 
 
-
+/**
+ * 可以在这里通过注解的方式操作字节码
+ * @param s 访问的注解名
+ * @param b 是否方法
+ * @return  methodVisitor
+ */
             @Override
             groovyjarjarasm.asm.AnnotationVisitor visitAnnotation(String s, boolean b) {
                 if (s == 'Lcom/sensorsdata/analytics/android/sdk/SensorsDataTrackViewOnClick;') {

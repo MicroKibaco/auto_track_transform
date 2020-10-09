@@ -10,10 +10,10 @@ import org.gradle.api.Project
  * @Tel: 18390833563
  * @function description:
  */
-class SensorsAnalyticsPlugin implements Plugin<Project> {
+class MkAnalyticsPlugin implements Plugin<Project> {
     void apply(Project project) {
 
-        SensorsAnalyticsExtension extension = project.extensions.create("sensorsAnalytics", SensorsAnalyticsExtension)
+        MkAnalyticsExtension extension = project.extensions.create("sensorsAnalytics", MkAnalyticsExtension)
 
         boolean disableSensorsAnalyticsPlugin = false
         Properties properties = new Properties()
@@ -24,7 +24,7 @@ class SensorsAnalyticsPlugin implements Plugin<Project> {
 
         if (!disableSensorsAnalyticsPlugin) {
             AppExtension appExtension = project.extensions.findByType(AppExtension.class)
-            appExtension.registerTransform(new SensorsAnalyticsTransform(project, extension))
+            appExtension.registerTransform(new MkAnalyticsTransform(project, extension))
         } else {
             println("------------您已关闭了小木箱插件--------------")
         }

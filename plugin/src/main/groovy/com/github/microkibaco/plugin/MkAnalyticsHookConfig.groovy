@@ -1,15 +1,18 @@
 package com.github.microkibaco.plugin
 
+
 import groovyjarjarasm.asm.Opcodes
 
-class SensorsAnalyticsHookConfig {
+class MkAnalyticsHookConfig {
     /**
      * android.gradle 3.2.1 版本中，针对 Lambda 表达式处理
      */
 
-    public final static HashMap<String, SensorsAnalyticsMethodCell> LAMBDA_METHODS = new HashMap<>()
+    public final static Map<String, MkAnalyticsMethodCell> LAMBDA_METHODS = new HashMap<>()
     static {
-        SensorsAnalyticsMethodCell onClick = new SensorsAnalyticsMethodCell(
+
+        // onClick 事件
+        MkAnalyticsMethodCell onClick = new MkAnalyticsMethodCell(
                 'onClick',
                 '(Landroid/view/View;)V',
                 'Landroid/view/View$OnClickListener;',
@@ -18,7 +21,9 @@ class SensorsAnalyticsHookConfig {
                 1, 1,
                 [Opcodes.ALOAD])
         LAMBDA_METHODS.put(onClick.parent + onClick.name + onClick.desc, onClick)
-        SensorsAnalyticsMethodCell onCheckedChanged = new SensorsAnalyticsMethodCell(
+
+        // onCheckedChanged 方法
+        MkAnalyticsMethodCell onCheckedChanged = new MkAnalyticsMethodCell(
                 'onCheckedChanged',
                 '(Landroid/widget/CompoundButton;Z)V',
                 'Landroid/widget/CompoundButton$OnCheckedChangeListener;',
@@ -28,9 +33,10 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD])
         LAMBDA_METHODS.put(onCheckedChanged.parent + onCheckedChanged.name + onCheckedChanged.desc, onCheckedChanged)
 
-        SensorsAnalyticsMethodCell onRatingChanged = new SensorsAnalyticsMethodCell(
+        // onRatingChanged 方法
+        MkAnalyticsMethodCell onRatingChanged = new MkAnalyticsMethodCell(
                 'onRatingChanged',
-                '(Landroid/widget/RatingBar;FZ)V',
+                '(Landroid/widget/ RatingBar;FZ)V',
                 'Landroid/widget/RatingBar$OnRatingBarChangeListener;',
                 'trackViewOnClick',
                 '(Landroid/view/View;)V',
@@ -38,8 +44,8 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD])
         LAMBDA_METHODS.put(onRatingChanged.parent + onRatingChanged.name + onRatingChanged.desc, onRatingChanged)
 
-
-        SensorsAnalyticsMethodCell onStopTrackingTouch = new SensorsAnalyticsMethodCell(
+       // onStopTrackingTouch 方法
+        MkAnalyticsMethodCell onStopTrackingTouch = new MkAnalyticsMethodCell(
                 'onStopTrackingTouch',
                 '(Landroid/widget/SeekBar;)V',
                 'Landroid/widget/SeekBar$OnSeekBarChangeListener;',
@@ -49,7 +55,8 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD])
         LAMBDA_METHODS.put(onStopTrackingTouch.parent + onStopTrackingTouch.name + onStopTrackingTouch.desc, onStopTrackingTouch)
 
-        SensorsAnalyticsMethodCell onClick1 = new SensorsAnalyticsMethodCell(
+        // onClick 方法
+        MkAnalyticsMethodCell onClick1 = new MkAnalyticsMethodCell(
                 'onClick',
                 '(Landroid/content/DialogInterface;I)V',
                 'Landroid/content/DialogInterface$OnClickListener;',
@@ -59,7 +66,8 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD, Opcodes.ILOAD])
         LAMBDA_METHODS.put(onClick1.parent + onClick1.name + onClick1.desc, onClick1)
 
-        SensorsAnalyticsMethodCell onItemClick = new SensorsAnalyticsMethodCell(
+        // onItemClick 方法
+        MkAnalyticsMethodCell onItemClick = new MkAnalyticsMethodCell(
                 'onItemClick',
                 '(Landroid/widget/AdapterView;Landroid/view/View;IJ)V',
                 'Landroid/widget/AdapterView$OnItemClickListener;',
@@ -69,7 +77,8 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ILOAD])
         LAMBDA_METHODS.put(onItemClick.parent + onItemClick.name + onItemClick.desc, onItemClick)
 
-        SensorsAnalyticsMethodCell onGroupClick = new SensorsAnalyticsMethodCell(
+        // onGroupClick 方法
+        MkAnalyticsMethodCell onGroupClick = new MkAnalyticsMethodCell(
                 'onGroupClick',
                 '(Landroid/widget/ExpandableListView;Landroid/view/View;IJ)Z',
                 'Landroid/widget/ExpandableListView$OnGroupClickListener;',
@@ -79,7 +88,8 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ILOAD])
         LAMBDA_METHODS.put(onGroupClick.parent + onGroupClick.name + onGroupClick.desc, onGroupClick)
 
-        SensorsAnalyticsMethodCell onChildClick = new SensorsAnalyticsMethodCell(
+        // onChildClick 方法
+        MkAnalyticsMethodCell onChildClick = new MkAnalyticsMethodCell(
                 'onChildClick',
                 '(Landroid/widget/ExpandableListView;Landroid/view/View;IIJ)Z',
                 'Landroid/widget/ExpandableListView$OnChildClickListener;',
@@ -89,7 +99,8 @@ class SensorsAnalyticsHookConfig {
                 [Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.ILOAD])
         LAMBDA_METHODS.put(onChildClick.parent + onChildClick.name + onChildClick.desc, onChildClick)
 
-        SensorsAnalyticsMethodCell onTabChanged = new SensorsAnalyticsMethodCell(
+        // onTabChanged 方法
+        MkAnalyticsMethodCell onTabChanged = new MkAnalyticsMethodCell(
                 'onTabChanged',
                 '(Ljava/lang/String;)V',
                 'Landroid/widget/TabHost$OnTabChangeListener;',

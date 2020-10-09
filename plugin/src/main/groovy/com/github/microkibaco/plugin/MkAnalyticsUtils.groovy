@@ -1,7 +1,7 @@
 package com.github.microkibaco.plugin
 
 import org.objectweb.asm.Opcodes
-class SensorsAnalyticsUtils implements Opcodes {
+class MkAnalyticsUtils implements Opcodes {
     static boolean isSynthetic(int access) {
         return (access & ACC_SYNTHETIC) != 0
     }

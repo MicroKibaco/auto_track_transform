@@ -11,7 +11,7 @@ import java.util.jar.JarFile
 import java.util.jar.JarOutputStream
 import java.util.regex.Matcher
 
-class SensorsAnalyticsClassModifier {
+class MkAnalyticsClassModifier {
     // 将修改的 .class 文件放到一个HashMap对象中
     private static HashSet<String> exclude = new HashSet<>();
     static {
@@ -27,9 +27,9 @@ class SensorsAnalyticsClassModifier {
     /**
      * 1. 使用 ASM 的 ClassReader 类读取 .class 的字节数组并加载类
      * 2. 使用 ClassVisor "拜访" 类 并进行修改符合特定条件的方法
-     * @param jarFile
-     * @param tempDir
-     * @param nameHex
+     * @param jarFile jar文件
+     * @param tempDir 文件目录
+     * @param nameHex 文件hash值
      * @return 字节数组
      */
     static File modifyJar(File jarFile, File tempDir, boolean nameHex) {
@@ -46,6 +46,7 @@ class SensorsAnalyticsClassModifier {
             hexName = DigestUtils.md5Hex(jarFile.absolutePath).substring(0, 8)
         }
         def outputJar = new File(tempDir, hexName + jarFile.name)
+        // 1. 使用 jarOutOutput 相关 API 对jar 进行解压
         JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(outputJar))
         Enumeration enumeration = file.entries()
         while (enumeration.hasMoreElements()) {
@@ -73,9 +74,11 @@ class SensorsAnalyticsClassModifier {
                             .replace(".class", "")
 
                     if (isShouldModify(className)) {
+                        // modifyClass 修改 .class 文件
                         modifiedClassBytes = modifyClass(sourceClassBytes)
                     }
                 }
+                // 进行打包
                 if (modifiedClassBytes == null) {
                     modifiedClassBytes = sourceClassBytes
                 }
@@ -98,7 +101,7 @@ class SensorsAnalyticsClassModifier {
  */
     private static byte[] modifyClass(byte[] srcClass) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS)
-        ClassVisitor classVisitor = new SensorsAnalyticsClassVisitor(classWriter)
+        ClassVisitor classVisitor = new MkAnalyticsClassVisitor(classWriter)
         ClassReader cr = new ClassReader(srcClass)
         cr.accept(classVisitor, ClassReader.SKIP_FRAMES)
         return classWriter.toByteArray()
