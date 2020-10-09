@@ -13,6 +13,6 @@ import org.gradle.api.Project
 public class SensorsAnalyticsPlugin implements Plugin<Project> {
     void apply(Project project) {
         AppExtension appExtension = project.extensions.findByType(AppExtension.class)
-        appExtension.registerTransform(new SensorsAnalyticsTransform(project))
+        appExtension.registerTransform(new SensorsAnalyticsTransformTest(project))
     }
 }

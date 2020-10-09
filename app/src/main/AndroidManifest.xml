@@ -3,6 +3,7 @@
         package="com.github.microkibaco.auto_track_transform">
 
     <application
+            android:name=".AsmApplication"
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"

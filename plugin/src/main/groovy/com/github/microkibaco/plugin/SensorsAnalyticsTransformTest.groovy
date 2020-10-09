@@ -1,18 +1,16 @@
 package com.github.microkibaco.plugin
-import org.gradle.api.Project
-import com.android.build.api.transform.*
 
-/**
- * @author 杨正友(小木箱)于 2020/10/9 22 08 创建
- * @Email: yzy569015640@gmail.com
- * @Tel: 18390833563
- * @function description:
- */
-class SensorsAnalyticsTransform extends Transform {
+import com.android.build.api.transform.*
+import com.android.build.gradle.internal.pipeline.TransformManager
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
+import org.gradle.api.Project
+
+class SensorsAnalyticsTransformTest extends Transform {
     private static Project project
     private SensorsAnalyticsExtension sensorsAnalyticsExtension
 
-    SensorsAnalyticsTransform(Project project, SensorsAnalyticsExtension sensorsAnalyticsExtension) {
+    SensorsAnalyticsTransformTest(Project project, SensorsAnalyticsExtension sensorsAnalyticsExtension) {
         this.project = project
         this.sensorsAnalyticsExtension = sensorsAnalyticsExtension
     }
@@ -22,7 +20,7 @@ class SensorsAnalyticsTransform extends Transform {
         return "sensorsAnalytics"
     }
 
-    /**
+    /*
      * 需要处理的数据类型，有两种枚举类型
      * CLASSES 代表处理的 java 的 class 文件，RESOURCES 代表要处理 java 的资源
      * @return
@@ -32,7 +30,7 @@ class SensorsAnalyticsTransform extends Transform {
         return TransformManager.CONTENT_CLASS
     }
 
-    /**
+    /*
      * 指 Transform 要操作内容的范围，官方文档 Scope 有 7 种类型：
      * 1. EXTERNAL_LIBRARIES        只有外部库
      * 2. PROJECT                   只有项目内容
@@ -63,17 +61,17 @@ class SensorsAnalyticsTransform extends Transform {
             outputProvider.deleteAll()
         }
 
-        /**Transform 的 inputs 有两种类型，一种是目录，一种是 jar 包，要分开遍历 */
+        /*Transform 的 inputs 有两种类型，一种是目录，一种是 jar 包，要分开遍历 */
         inputs.each { TransformInput input ->
-            /**遍历目录*/
+            /*遍历目录*/
             input.directoryInputs.each { DirectoryInput directoryInput ->
-                /**当前这个 Transform 输出目录*/
+                /*当前这个 Transform 输出目录*/
                 File dest = outputProvider.getContentLocation(directoryInput.name, directoryInput.contentTypes, directoryInput.scopes, Format.DIRECTORY)
                 File dir = directoryInput.file
 
                 if (dir) {
                     HashMap<String, File> modifyMap = new HashMap<>()
-                    /**遍历以某一扩展名结尾的文件*/
+                    /*遍历以某一扩展名结尾的文件*/
                     dir.traverse(type: FileType.FILES, nameFilter: ~/.*\.class/) {
                         File classFile ->
                             if (SensorsAnalyticsClassModifier.isShouldModify(classFile.name)) {
@@ -82,7 +80,7 @@ class SensorsAnalyticsTransform extends Transform {
                                     modified = SensorsAnalyticsClassModifier.modifyClassFile(dir, classFile, context.getTemporaryDir())
                                 }
                                 if (modified != null) {
-                                    /**key 为包名 + 类名，如：/cn/sensorsdata/autotrack/android/app/MainActivity.class*/
+                                    /*key 为包名 + 类名，如：/cn/sensorsdata/autotrack/android/app/MainActivity.class*/
                                     String ke = classFile.absolutePath.replace(dir.absolutePath, "")
                                     modifyMap.put(ke, modified)
                                 }
@@ -101,18 +99,18 @@ class SensorsAnalyticsTransform extends Transform {
                 }
             }
 
-            /**遍历 jar*/
+          /*  遍历 jar*/
             input.jarInputs.each { JarInput jarInput ->
                 String destName = jarInput.file.name
 
-                /**截取文件路径的 md5 值重命名输出文件,因为可能同名,会覆盖*/
+                /*截取文件路径的 md5 值重命名输出文件,因为可能同名,会覆盖*/
                 def hexName = DigestUtils.md5Hex(jarInput.file.absolutePath).substring(0, 8)
-                /** 获取 jar 名字*/
+                /* 获取 jar 名字*/
                 if (destName.endsWith(".jar")) {
                     destName = destName.substring(0, destName.length() - 4)
                 }
 
-                /** 获得输出文件*/
+                /* 获得输出文件*/
                 File dest = outputProvider.getContentLocation(destName + "_" + hexName, jarInput.contentTypes, jarInput.scopes, Format.JAR)
                 def modifiedJar = null;
                 if (!sensorsAnalyticsExtension.disableAppClick) {
