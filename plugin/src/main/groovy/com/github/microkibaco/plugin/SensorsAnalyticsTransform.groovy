@@ -88,6 +88,7 @@ class SensorsAnalyticsTransform extends Transform {
                                 }
                             }
                     }
+                    // 将输入目录下的所有 .class 文件 拷贝到输出目录
                     FileUtils.copyDirectory(directoryInput.file, dest)
                     modifyMap.entrySet().each {
                         Map.Entry<String, File> en ->
@@ -95,6 +96,7 @@ class SensorsAnalyticsTransform extends Transform {
                             if (target.exists()) {
                                 target.delete()
                             }
+                            // 将HashMap 中修改过的 .class 文件拷贝到输出目录,覆盖之前拷贝的 .class 文件(原 .class文件)
                             FileUtils.copyFile(en.getValue(), target)
                             en.getValue().delete()
                     }

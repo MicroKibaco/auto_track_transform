@@ -12,13 +12,26 @@ import java.util.jar.JarOutputStream
 import java.util.regex.Matcher
 
 class SensorsAnalyticsClassModifier {
+    // 将修改的 .class 文件放到一个HashMap对象中
     private static HashSet<String> exclude = new HashSet<>();
     static {
         exclude = new HashSet<>()
+        // 过滤.class文件1: android.support 包下的文件
         exclude.add('android.support')
-        exclude.add('com.sensorsdata.analytics.android.sdk')
+
+        // 过滤.class文件2: 我们sdk下的.class文件
+        exclude.add('com.github.microkibaco.asm_sdk')
     }
 
+
+    /**
+     * 1. 使用 ASM 的 ClassReader 类读取 .class 的字节数组并加载类
+     * 2. 使用 ClassVisor "拜访" 类 并进行修改符合特定条件的方法
+     * @param jarFile
+     * @param tempDir
+     * @param nameHex
+     * @return 字节数组
+     */
     static File modifyJar(File jarFile, File tempDir, boolean nameHex) {
         /**
          * 读取原 jar
@@ -41,6 +54,7 @@ class SensorsAnalyticsClassModifier {
             try {
                 inputStream = file.getInputStream(jarEntry)
             } catch (Exception e) {
+                e.printStackTrace()
                 return null
             }
             String entryName = jarEntry.getName()
@@ -54,7 +68,10 @@ class SensorsAnalyticsClassModifier {
                 byte[] modifiedClassBytes = null
                 byte[] sourceClassBytes = IOUtils.toByteArray(inputStream)
                 if (entryName.endsWith(".class")) {
-                    className = entryName.replace(Matcher.quoteReplacement(File.separator), ".").replace(".class", "")
+
+                    className = entryName.replace(Matcher.quoteReplacement(File.separator), ".")
+                            .replace(".class", "")
+
                     if (isShouldModify(className)) {
                         modifiedClassBytes = modifyClass(sourceClassBytes)
                     }
@@ -71,6 +88,14 @@ class SensorsAnalyticsClassModifier {
         return outputJar
     }
 
+/**
+ * 1. 获取 .class 文件对应的 className ==> 包名 , 类名
+ * 2. 获取 .class 文件字节数组
+ * 3. 调用 modifyClass 方法进行修改
+ * 4. 修改后的byte 数组 生成 .class 文件
+ * @param srcClass
+ * @return 字节数组* @throws IOException
+ */
     private static byte[] modifyClass(byte[] srcClass) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS)
         ClassVisitor classVisitor = new SensorsAnalyticsClassVisitor(classWriter)
@@ -79,19 +104,29 @@ class SensorsAnalyticsClassModifier {
         return classWriter.toByteArray()
     }
 
+    /**
+     * 判断是否需要修改
+     * @param className 类对象
+     * @return boolean
+     */
     protected static boolean isShouldModify(String className) {
         Iterator<String> iterator = exclude.iterator()
         while (iterator.hasNext()) {
             String packageName = iterator.next()
+            // 提高编译效率
             if (className.startsWith(packageName)) {
+
                 return false
             }
         }
 
+        // 过滤.class文件3: R.class 及其子类
         if (className.contains('R$') ||
+                // 过滤.class文件4: R2.class 及其子类
                 className.contains('R2$') ||
                 className.contains('R.class') ||
                 className.contains('R2.class') ||
+                // 过滤.class文件5: BuildConfig.class
                 className.contains('BuildConfig.class')) {
             return false
         }
@@ -99,6 +134,13 @@ class SensorsAnalyticsClassModifier {
         return true
     }
 
+    /**
+     * 修改 .class文件
+     * @param dir 文件夹
+     * @param classFile 文件
+     * @param tempDir 备份文件夹
+     * @return 文件对象
+     */
     static File modifyClassFile(File dir, File classFile, File tempDir) {
         File modified = null
         try {
