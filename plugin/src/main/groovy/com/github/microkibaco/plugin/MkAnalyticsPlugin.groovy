@@ -3,6 +3,8 @@ package com.github.microkibaco.plugin
 import com.android.build.gradle.AppExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.internal.reflect.Instantiator
+import org.gradle.invocation.DefaultGradle
 
 /**
  * @author 杨正友(小木箱)于 2020/10/9 14 17 创建
@@ -13,7 +15,7 @@ import org.gradle.api.Project
 class MkAnalyticsPlugin implements Plugin<Project> {
     void apply(Project project) {
 
-        MkAnalyticsExtension extension = project.extensions.create("sensorsAnalytics", MkAnalyticsExtension)
+        MkAnalyticsExtension extension = project.extensions.create("MkAnalytics", MkAnalyticsExtension)
 
         boolean disableSensorsAnalyticsPlugin = false
         Properties properties = new Properties()

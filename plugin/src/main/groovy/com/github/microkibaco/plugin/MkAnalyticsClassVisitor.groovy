@@ -1,12 +1,6 @@
 package com.github.microkibaco.plugin
 
-
-import groovyjarjarasm.asm.Handle
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
-
+import org.objectweb.asm.*
 
 class MkAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
     private final static String SDK_API_CLASS = "com/github/microkibaco/asm_sdk/SensorsDataAutoTrackHelper"
@@ -74,21 +68,7 @@ class MkAnalyticsClassVisitor extends ClassVisitor implements Opcodes {
                 }
             }
 
-            @Override
-            void visitInvokeDynamicInsn(String name1, String desc1, Handle bsm, Object... bsmArgs) {
-                super.visitInvokeDynamicInsn(name1, desc1, bsm, bsmArgs)
 
-                try {
-                    String desc2 = (String) bsmArgs[0]
-                    MkAnalyticsMethodCell sensorsAnalyticsMethodCell = MkAnalyticsHookConfig.LAMBDA_METHODS.get(Type.getReturnType(desc1).getDescriptor() + name1 + desc2)
-                    if (sensorsAnalyticsMethodCell != null) {
-                        Handle it = (Handle) bsmArgs[1]
-                        mLambdaMethodCells.put(it.name + it.desc, sensorsAnalyticsMethodCell)
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace()
-                }
-            }
 
             /**
              * 进入方法时插入字节码

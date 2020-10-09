@@ -5,6 +5,7 @@ import groovyjarjarasm.asm.Attribute
 import groovyjarjarasm.asm.Label
 import groovyjarjarasm.asm.MethodVisitor
 import groovyjarjarasm.asm.commons.AdviceAdapter
+import org.objectweb.asm.*
 
 class MkAnalyticsDefaultMethodVisitor extends AdviceAdapter {
 

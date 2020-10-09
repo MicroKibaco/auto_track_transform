@@ -1,6 +1,20 @@
 package com.github.microkibaco.plugin
+
+import com.android.build.api.transform.Context
+import com.android.build.api.transform.DirectoryInput
+import com.android.build.api.transform.Format
+import com.android.build.api.transform.JarInput
+import com.android.build.api.transform.QualifiedContent
+import com.android.build.api.transform.Transform
+import com.android.build.api.transform.TransformException
+import com.android.build.api.transform.TransformInput
+import com.android.build.api.transform.TransformInvocation
+import com.android.build.api.transform.TransformOutputProvider
+import com.android.build.gradle.internal.pipeline.TransformManager
+import groovy.io.FileType
+import org.apache.commons.codec.digest.DigestUtils
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
-import com.android.build.api.transform.*
 
 /**
  * @author 杨正友(小木箱)于 2020/10/9 22 08 创建
@@ -19,7 +33,7 @@ class MkAnalyticsTransform extends Transform {
 
     @Override
     String getName() {
-        return "sensorsAnalytics"
+        return "MkAnalytics"
     }
 
     /**
@@ -74,6 +88,7 @@ class MkAnalyticsTransform extends Transform {
                 if (dir) {
                     HashMap<String, File> modifyMap = new HashMap<>()
                     /**遍历以某一扩展名结尾的文件*/
+
                     dir.traverse(type: FileType.FILES, nameFilter: ~/.*\.class/) {
                         File classFile ->
                             if (MkAnalyticsClassModifier.isShouldModify(classFile.name)) {

@@ -1,10 +1,10 @@
 package com.github.microkibaco.plugin
 
-import groovyjarjarasm.asm.ClassReader
-import groovyjarjarasm.asm.ClassVisitor
-import groovyjarjarasm.asm.ClassWriter
 import org.apache.commons.codec.digest.DigestUtils
-import org.apache.commons.compress.utils.IOUtils
+import org.apache.commons.io.IOUtils
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.ClassWriter
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -20,7 +20,7 @@ class MkAnalyticsClassModifier {
         exclude.add('android.support')
 
         // 过滤.class文件2: 我们sdk下的.class文件
-        exclude.add('com.github.microkibaco.asm_sdk')
+       exclude.add('com.github.microkibaco.asm_sdk')
     }
 
 

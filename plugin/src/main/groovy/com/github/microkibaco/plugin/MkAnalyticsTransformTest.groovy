@@ -17,7 +17,7 @@ class MkAnalyticsTransformTest extends Transform {
 
     @Override
     String getName() {
-        return "sensorsAnalytics"
+        return "MkAnalytics"
     }
 
     /*
