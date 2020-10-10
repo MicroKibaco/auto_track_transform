@@ -617,28 +617,112 @@ class MkAnalyticsTransform extends Transform {
 
 MkAnalyticsTransform 继承 Transform 。 在 Transform 里, 会分别遍历 目录和 jar。实现的相关抽象方法,与之前我们实现的 Gradle Transform 样例一致,具体的话可以跳回去看上文介绍。
 
-- 遍历目录
+#### A. 遍历目录
 
-分别遍历目录里面每一个 .class 文件,首先通过
+分别遍历目录里面每一个 .class 文件,首先通过MkAnalyticsClassModifier.isShouldModify 方法简单过滤一下肯定不需要的 .class 文件。 isShouldModify 方法实现逻辑比较简单
 
-- 遍历 jar
+
+ ```java
+   
+   // 将修改的 .class 文件放到一个HashMap对象中
+    private static HashSet<String> exclude = new HashSet<>();
+    static {
+        exclude = new HashSet<>()
+        // 过滤.class文件1: android.support 包下的文件
+        exclude.add('android.support')
+
+        // 过滤.class文件2: 我们sdk下的.class文件
+       exclude.add('com.github.microkibaco.asm_sdk')
+    }
+
+    /**
+     * 判断是否需要修改
+     * @param className 类对象
+     * @return boolean
+     */
+    protected static boolean isShouldModify(String className) {
+        Iterator<String> iterator = exclude.iterator()
+        while (iterator.hasNext()) {
+            String packageName = iterator.next()
+            // 提高编译效率
+            if (className.startsWith(packageName)) {
+
+                return false
+            }
+        }
+
+        // 过滤.class文件3: R.class 及其子类
+        if (className.contains('R$') ||
+                // 过滤.class文件4: R2.class 及其子类
+                className.contains('R2$') ||
+                className.contains('R.class') ||
+                className.contains('R2.class') ||
+                // 过滤.class文件5: BuildConfig.class
+                className.contains('BuildConfig.class')) {
+            return false
+        }
+
+        return true
+    }
+  ```
+  
+  比如我们可以简单过滤 如下: .class 文件
+  
+   - android.supoort包下的文件
+   - 我们 SDK 的 .class 文文件
+   - R.classs 及其子类
+   - R2.class 及其子类(ButterKnife生成)
+   - BuildConfig.class
+   
+   之所以要过滤一些文件,主要是为了提高编译效率。
+   
+   
+
+#### B. 遍历 jar
+
+![](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/29c6dd53adb945a9bb15bc3c7d183a35~tplv-k3u1fbpfcp-watermark.webp)
+
 ### 第十二步:  定义 Plugin
+![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a22e7193271d4f0f872456e64c0a8e8b~tplv-k3u1fbpfcp-watermark.webp)
 ### 第十三步: 新建properites 文件
+
+![](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7b716bb44bf44054b9519d3880f9daea~tplv-k3u1fbpfcp-watermark.webp)
 ### 第十四步: 构建插件
+
+![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4fda34b919724e8aa998ac558d54dfd8~tplv-k3u1fbpfcp-watermark.webp)
 ### 第十五步: 添加对插件的依赖
+
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0408c4e408d94abd9ce87e83fb14133a~tplv-k3u1fbpfcp-watermark.webp)
 ### 第十六步: 在应用程序使用插件
+
+![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3dac29ee806249c686a321634a3b5f86~tplv-k3u1fbpfcp-watermark.webp)
 ### 第十七步: 构建应用程序
 
+确认app/build/intermediates/transforms/MknalyticeAutoTrack/debug/是否有生成新的 .class 文件 有没有插入新的字节码
 
-## 1.5 ASM 扩展采集能力
-### 1.5.1 支持采集AlerDialog 的点击事件 
-### 1.5.2 支持采集 MenuItem 的点击事件
-### 1.5.3 支持采集CheckBox RadioGroup等以ComponButton派生类点击事件
-### 1.5.4 支持采集SeekBar的点击事件
-### 1.5.5 支持采集 Spinner 的点击事件
-### 1.5.6 支持采集 RattingBar 的点击事件
-### 1.5.7 支持采集 TabHost 的点击事件
-### 1.5.8 支持采集 ListView GridView 的点击事件
-### 1.5.9 支持采集 ExpendableListView 的点击事件
-## 1.6 ASM 存在的风险点
+## 1.5 ASM 存在的风险点
 ### 无法采集android:onClick 属性绑定的点击事件
+
+#### 第一步: 新增一个注解 @SensorsDataTrckViewOnClick 
+![](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6b01c31601e24b3c84aecc3f05022f1e~tplv-k3u1fbpfcp-watermark.webp)
+
+#### 第二步: visitMethod 注解标记
+在前面定义的 MethodVistor 类里, 有一个叫 visitMethod 方法,该方法是扫描到方法注解声明的时进行调用。判断一下当前扫描到的注解是否为我们自定义的注解类型,如果是则做个标记,然后在 visitMethod 判断是否有这个标记,如果有,则埋点字节码。visitAnnotation 的实现如下: 
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2e218a3d339c41f9b458d80da62ceabf~tplv-k3u1fbpfcp-watermark.webp)
+
+#### 第三步: visitAnnotation 注解特殊处理
+
+在 visitAnnotation 方法里,我们判断一下当前扫描的注解(即第一个参数 s)是否是我们自定义的 @SensorsDataTrckViewOnClick 注解类型,如果是,就做个标记,即
+
+![](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/92289b88449b4cd7aab9820a2d9fb26d~tplv-k3u1fbpfcp-watermark.webp)
+
+#### 第四步:  SensorsDataTrckViewHelper.tacakViewOnClick(view)  插入字节码
+在onMethodExit方法里,如果 isSensorsDataTrackViewOnClickAnnotation 为 true,则说明该方法加了  @SensorsDataTrckViewOnClick 注解。如果被注解的方法有且只有一个View类型的参数,那我们就插入埋点代码,即插入代码SensorsDataTrckViewHelper.tacakViewOnClick(view) 对应的字节码
+
+![](https://p9-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7b382965469a458abfce1730bf78fe90~tplv-k3u1fbpfcp-watermark.webp)
+
+最后在 android: onClick 属性绑定方法上使用我们自定义的注解标记一下,即 @SensorsDataTrckViewOnClick 
+
+## 1.6 总结
+
+本文 以App打包流程为基石 引入了 Gradle Transform ,并手把手教大家写了一个简单的 Transform Demo,通过 ASM +Gradle Transform 实现了Button全埋点组件,让大家更好理解 ASM 原理,当然该埋点组件存在一些不足,如: 不支持 AlerDialog MenuItem CheckBox SeekBar Spinner RattingBar TabHost ListView GridView 和 ExpendableListView 这个需要大家去扩展。ASM优势不用多说,实际开发中一般可用于大图监测,卡顿时间精准测量,日志上报等等。可以说是完美填补了AspectJ的不足
